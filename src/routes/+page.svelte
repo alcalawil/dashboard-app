@@ -1,0 +1,114 @@
+<script lang="ts">
+	import { onMount, SvelteComponent } from "svelte";
+
+	import SideMenu from "$lib/components/SideMenu/SideMenu.svelte";
+
+	/* Views */
+	import Dashboard from "$lib/views/Dashboard.svelte";
+	import ManageTeam from "$lib/views/ManageTeam.svelte";
+	import ManagePlatforms from "$lib/views/ManagePlatforms.svelte";
+	import ManageKeys from "$lib/views/ManageKeys.svelte";
+	import ManageContracts from "$lib/views/ManageContracts.svelte";
+	import Settings from "$lib/views/Settings.svelte";
+
+	/* Modals */
+	import InviteTeammate from "$lib/modals/team/InviteTeammate.svelte";
+	import RemoveTeammate from "$lib/modals/team/RemoveTeammate.svelte";
+	import TransferOwnership from "$lib/modals/team/TransferOwnership.svelte";
+	import CreatePlatform from "$lib/modals/platform/CreatePlatform.svelte";
+	import EditPlatform from "$lib/modals/platform/EditPlatform.svelte";
+	import DeactPlatform from "$lib/modals/platform/DeactPlatform.svelte";
+	import KeyCreate from "$lib/modals/keys/KeyCreate.svelte";
+	import KeySuccess from "$lib/modals/keys/KeySuccess.svelte";
+	import CreateContract from "$lib/modals/contracts/CreateContract.svelte";
+	import EditContract from "$lib/modals/contracts/EditContract.svelte";
+	import DeactContract from "$lib/modals/contracts/DeactContract.svelte";
+	import AssociatedGames from "$lib/modals/contracts/AssociatedGames.svelte";
+	import FunctionSignatures from "$lib/modals/contracts/FunctionSignatures.svelte";
+
+	/* Settings */
+	import MyAccount from "$lib/components/Settings/MyAccount.svelte";
+	import ChangePassword from "$lib/components/Settings/ChangePassword.svelte";
+
+	import { activeTab, currentUser, SettingsTab, tabToViewMap } from "$lib/stores";
+	import { menuItems, NavItem } from "$lib/constants";
+	import { authService } from "$lib/services";
+
+	let isLoggedIn = false;
+
+	onMount(async () => {
+		/* Set the view for each menu item */
+		const mapViewsToMenuItems = new Map<NavItem, typeof SvelteComponent>();
+
+		mapViewsToMenuItems.set(NavItem.DASHBOARD, Dashboard);
+		mapViewsToMenuItems.set(NavItem.MANAGE_TEAM, ManageTeam);
+		mapViewsToMenuItems.set(NavItem.MANAGE_PLATFORMS, ManagePlatforms);
+		mapViewsToMenuItems.set(NavItem.MANAGE_KEYS, ManageKeys);
+		mapViewsToMenuItems.set(NavItem.MANAGE_CONTRACTS, ManageContracts);
+		mapViewsToMenuItems.set(NavItem.SETTINGS, Settings);
+
+		menuItems.forEach((item) => (item.view = mapViewsToMenuItems.get(item.name)));
+		/* End Set the view for each menu item */
+
+		// Settings tabs
+		$tabToViewMap = new Map<SettingsTab, typeof SvelteComponent>();
+		$tabToViewMap.set(SettingsTab.MY_ACCOUNT, MyAccount);
+		$tabToViewMap.set(SettingsTab.CHANGE_PASSWORD, ChangePassword);
+
+		try {
+			const member = authService.getLoggedUser();
+			if (!member) return (window.location.href = "/login");
+
+			isLoggedIn = true;
+			$currentUser = member;
+			$activeTab = menuItems[0];
+		} catch (error) {
+			console.log(error);
+		}
+	});
+</script>
+
+<svelte:head>
+	<title>String Dashboard</title>
+</svelte:head>
+
+{#if isLoggedIn}
+	<div class="root">
+		<SideMenu />
+
+		<div class="content">
+			<svelte:component this={$activeTab?.view} />
+		</div>
+
+		<!-- In-page modals -->
+
+		<!-- Manage Team -->
+		<InviteTeammate />
+		<RemoveTeammate />
+		<TransferOwnership />
+
+		<!-- Manage Platforms -->
+		<CreatePlatform />
+		<EditPlatform />
+		<DeactPlatform />
+
+		<!-- Manage API Keys -->
+		<KeyCreate />
+		<KeySuccess />
+
+		<!-- Manage Contracts -->
+		<CreateContract />
+		<EditContract />
+		<DeactContract />
+		<AssociatedGames />
+		<FunctionSignatures />
+	</div>
+{/if}
+
+<style>
+	.content {
+		transform: translate(260px);
+		width: calc(100% - 260px);
+		height: 100%;
+	}
+</style>
