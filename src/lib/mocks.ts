@@ -118,11 +118,13 @@ export const organizationMock = organizationMocks[0];
 
 export const memberMocks: Member[] = [
 	{
-		id: "member-1",
-		createdAt: "2023-09-06T08:00:00Z",
-		email: "member1@example.com",
-		name: "Tony Stark",
-		role: Role.OWNER
+		id: "123456789",
+		createdAt: "2023-08-30T10:00:00Z",
+		deactivatedAt: "2023-08-31T15:30:00Z",
+		deletedAt: undefined,
+		email: "juan@perez.com",
+		name: "Juan Perez",
+		role: Role.ADMIN
 	},
 	{
 		id: "member-2",
